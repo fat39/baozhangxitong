@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/plugins/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    <style>
+        .login {
+            width: 600px;
+            margin: 0 auto;
+            margin-top: 80px;
+        }
+    </style>
+</head>
+<body>
+<div class="login">
+    <form class="form-horizontal" method="POST" action="/login.html">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="col-sm-2 control-label">用户名</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" placeholder="用户名" name="username">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">密码</label>
+            <div class="col-sm-10">
+                <input type="password" class="form-control" id="inputPassword" placeholder="密码" name="password">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">验证码</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" id="input_check_code" placeholder="验证码" name="code">
+            </div>
+            <div class="col-sm-5">
+                <img id="codecheck" src="/codecheck/" alt="点击刷新">{{ err_code }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <input type="submit" class="btn btn-default" value="登录">{{ err_login }}
+            </div>
+        </div>
+    </form>
+
+</div>
+
+
+<script src="/static/jquery-3.3.1.js"></script>
+<script>
+    $("#codecheck").click(function(){
+        $(this).attr("src",$(this).attr("src")+"?");
+    })
+</script>
+
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/plugins/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/commons.css">
+</head>
+<body>
+    <nav class="navbar navbar-default no-radius">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">报障系统项目</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    {% if type_id %}
+                        <li><a href="/">全部</a></li>
+                    {% else %}
+                        <li class="active"><a href="/">全部</a></li>
+                    {% endif %}
+                    {% for item in type_choice_list %}
+                        {% if item.0 == type_id %}
+                            <li class="active"><a href="/all/{{ item.0 }}/">{{ item.1 }}</a></li>
+                        {% else %}
+                            <li><a href="/all/{{ item.0 }}/">{{ item.1 }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+
+                {% if not request.session.userinfo %}
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="/login/">登录</a></li>
+                        <li><a href="/register/">注册</a></li>
+                    </ul>
+                {% else %}
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a>{{ request.session.userinfo.username }}</a></li>
+                        <li><a href="#">我的博客</a></li>
+                        <li><a href="#">管理</a></li>
+                        <li><a href="/logout/">退出</a></li>
+                    </ul>
+                {% endif %}
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+    <div>
+        <div class="container">
+            <div class="col-md-8">
+                <div class="article-list">
+                    {% for article in article_list %}
+                        <div class="article-item">
+                        <h3 class="art-header"><a href="#">{{ article.title }}</a></h3>
+                        <div class="art-body clearfix">
+                            <a class="left" href=""><img src="{{ article.blog.user.avatar }}" alt=""></a>
+                            {{ article.summary }}
+                        </div>
+                        <div class="art-footer">
+                            <a id="test" href="">
+                                <span class="glyphicon glyphicon-user"></span>
+                                {{ article.blog.user.nickname }}
+                            </a>
+                            <span>发布于{{ article.create_time }}</span>
+                            <a href="">
+                                <span class="glyphicon glyphicon-comment" aria-hidden="true"></span>
+                                {{ article.comment_count }}
+                            </a>
+                            <a href="">
+                                <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+                                {{ article.up_count }}
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                </div>
+
+                <nav aria-label="Page navigation">
+                  <ul class="pagination">
+                    {{ page_info.pager|safe }}
+                  </ul>
+                </nav>
+            </div>
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">点赞TOP10</div>
+                    <div class="panel-body">
+                        {% for article in most_up_count %}
+                            <p><a href="">{{ article.title }}</a>-点赞{{ article.up_count }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">评论TOP10</div>
+                    <div class="panel-body">
+                        {% for article in most_comment_count %}
+                            <p><a href="">{{ article.title }}</a>-评论{{ article.comment_count }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+
+</body>
+</html>

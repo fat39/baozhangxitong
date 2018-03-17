@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/commons.css">
+
+</head>
+<body>
+
+<div class="register">
+    <form class="form-horizontal" method="POST" action="/register.html" novalidate>
+        {% csrf_token %}
+        <input id="realavatar" type="text" name="avatar" style="display:none">
+        <div class="form-group">
+            <label class="col-sm-2 control-label">用户名</label>
+            <div class="col-sm-10">
+                {{ newuser.username }}{{ newuser.errors.username.0 }}
+{#                <input type="text" class="form-control" placeholder="用户名" name="username">#}
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">昵称</label>
+            <div class="col-sm-10">
+                {{ newuser.nickname }}{{ newuser.errors.nickname.0 }}
+{#                <input type="text" class="form-control" placeholder="昵称" name="nickname">#}
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">邮箱</label>
+            <div class="col-sm-10">
+                {{ newuser.email }}{{ newuser.errors.email.0 }}
+{#                <input type="text" class="form-control" placeholder="邮箱" name="email">#}
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">密码</label>
+            <div class="col-sm-10">
+                {{ newuser.password }}{{ newuser.errors.password.0 }}
+{#                <input type="password" class="form-control" id="inputPassword" placeholder="密码" name="password">#}
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">密码确认</label>
+            <div class="col-sm-10">
+                {{ newuser.password2 }}{{ newuser.errors.password2.0 }}
+{#                <input type="password" class="form-control" id="inputPassword2" placeholder="密码确认" name="password2">#}
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">验证码</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" id="input_check_code" placeholder="验证码" name="code">
+            </div>
+            <div class="col-sm-5">
+                <img id="codecheck" src="/codecheck/" alt="点击刷新">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <input type="submit" class="btn btn-default" value="注册">
+            </div>
+        </div>
+
+    </form>
+
+    <form id="f1" method="POST" action="/uploadImg/" target="ifr" enctype="multipart/form-data">
+        {% csrf_token %}
+        <iframe id="ifr" name="ifr" style="display:none;"></iframe>
+        <input id="my_avatar" type="file" name="my_avatar" onchange="uploadImg();">
+        <img id="avatar_img" src="/static/imgs/avatar/default.jpg" alt="头像">
+    </form>
+
+
+</div>
+
+
+<script>
+    var code_img = document.getElementById("codecheck");
+    code_img.onclick = function(){
+    code_img.src += "?";
+    }
+</script>
+
+<script>
+    function uploadImg(){
+        document.getElementById('ifr').onload = loadIframe;
+        document.getElementById('f1').submit();
+    }
+    function loadIframe(){
+        var content = document.getElementById('ifr').contentWindow.document.body.innerText;
+        document.getElementById("avatar_img").src = '\\' + content;
+        document.getElementById("realavatar").value = '\\' + content;
+    }
+
+
+</script>
+
+</body>
+</html>

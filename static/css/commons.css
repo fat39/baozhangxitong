@@ -1,0 +1,58 @@
+.left{
+    float:left;
+}
+.right{
+    float:right;
+}
+.hide{
+    display: none;
+}
+
+.no-radius{
+    border-radius: 0 !important;
+}
+
+.article-list .article-item .art-body img{
+    width: 80px;
+    height: 80px;
+}
+
+.article-list .article-item .art-footer a{
+    margin: 0 10px;
+}
+
+
+.register {
+    width: 600px;
+    margin: 0 auto;
+    margin-top: 180px;
+    position: relative;
+}
+
+#my_avatar{
+    display: inline-block;
+    width: 80px;
+    height: 120px;
+    position: absolute;
+    left:260px;
+    margin-top: -20px;
+    margin-bottom: 20px;
+    z-index: 100;
+    opacity: 0;
+
+}
+
+#avatar_img{
+    width:80px;
+    height: 120px;
+    position:absolute;
+    top: -3px;
+    left:260px;
+    z-index: 99;
+}
+
+#f1{
+    position: absolute;
+    top:0;
+    margin-top: -130px;
+}

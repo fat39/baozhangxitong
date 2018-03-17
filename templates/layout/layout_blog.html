@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        a{
+            color: black;
+            text-decoration: none !important;
+        }
+        .pg_header{
+            background-color: orange;
+        }
+        .lmenu{
+            position: absolute;
+            left: 0;
+            width:200px;
+            border-right: 1px solid black;
+        }
+        .rcontent{
+            position: absolute;
+            left: 200px;
+            right: 0;
+
+        }
+        #menubar{
+            position: relative;
+            height:20px;
+        }
+
+        #menubar #rbar div{
+            display: inline-block;
+            background-color: #d4d4d4;
+            margin: 0 10px;
+        }
+        #rbar{
+            float:right;
+        }
+    </style>
+    {% block mycss %}{% endblock %}
+</head>
+<body>
+    <div class="pg_header">
+        <a href="/{{ blog.site }}.html"><h1 style="margin-top:0;">{{ user_info.nickname }}</h1></a>
+        <div id="menubar">
+            <div id="rbar">
+                <div><a href="/">首页</a></div>
+                <div>个人主页</div>
+                <div>管理</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pg_body">
+        <div class="lmenu">
+            <div>
+                公告
+                <ul>
+                    <li>昵称：{{ user_info.nickname }}</li>
+                    <li>粉丝：{{ fans_num }}</li>
+                    <li>关注：{{ follower_num }}</li>
+                    <li>邮箱：{{ user_info.email }}</li>
+                </ul>
+            </div>
+            <div>标签
+                <ul>
+                    {% for tag in tag_list %}
+                        {% if tag.tags__title %}
+                            <li><a href="/{{ blog.site }}/tag/{{ tag.tags__nid }}.html">{{ tag.tags__title }}({{ tag.ct }})</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>分类
+                <ul>
+                    {% for category in category_list %}
+                        {% if category.category__title %}
+                            <li><a href="/{{ blog.site }}/category/{{ category.category__nid }}.html">{{ category.category__title }}({{ category.ct }})</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>时间
+                <ul>
+                    {% for date in date_list %}
+                        <li><a href="">{{ date.Year_month }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="rcontent">
+            {% block mycontent %}{% endblock %}
+        </div>
+
+    </div>
+
+    {% block myscript %}{% endblock %}
+
+</body>
+</html>
