@@ -58,13 +58,13 @@ class RegisterForm(Form):
             self.add_error("password2", ValidationError("密码不一致"))
             # raise ValidationError("密码不一致")
         else:
-            self.cleaned_data.pop("password2")  # 如果一致，则去除password2，只保留password，为了与数据库字段一致（数据库只有password）
+            self.cleaned_data.pop("password2",None)  # 如果一致，则去除password2，只保留password，为了与数据库字段一致（数据库只有password）
             # return self.cleaned_data
             # return None # 两者均可
 
         # 如无创建时间，添加创建时间
-        if not self.cleaned_data.get("create_time"):
-            self.cleaned_data["create_time"] = time.strftime("%Y-%m-%d")
+        # if not self.cleaned_data.get("create_time"):
+        #     self.cleaned_data["create_time"] = time.strftime("%Y-%m-%d")
         # 如无nickname，添加nickname
         if not self.cleaned_data.get("nickname"):
             self.cleaned_data["nickname"] = self.cleaned_data.get("username","")+str(int(time.time()))

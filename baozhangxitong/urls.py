@@ -19,7 +19,11 @@ from blog import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    re_path("codecheck/",views.codecheck),
-    re_path("login.html",views.Login.as_view()),
-    re_path("register.html",views.Register.as_view()),
+    re_path("^$",views.Index.as_view()),
+    re_path(r'^all/(?P<type_id>\d+)/$',views.Index.as_view()),
+    re_path("^codecheck/$",views.codecheck),
+    re_path("^login.html$",views.Login.as_view()),
+    re_path("^register.html$",views.Register.as_view()),
+    re_path("^logout/$",views.logout),
+    re_path(r'^uploadAvatar/$', views.upload_avatar),
 ]

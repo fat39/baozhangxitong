@@ -40,8 +40,8 @@
 
                 {% if not request.session.userinfo %}
                     <ul class="nav navbar-nav navbar-right">
-                        <li><a href="/login/">登录</a></li>
-                        <li><a href="/register/">注册</a></li>
+                        <li><a href="/login.html">登录</a></li>
+                        <li><a href="/register.html">注册</a></li>
                     </ul>
                 {% else %}
                     <ul class="nav navbar-nav navbar-right">
@@ -62,7 +62,7 @@
                         <div class="article-item">
                         <h3 class="art-header"><a href="#">{{ article.title }}</a></h3>
                         <div class="art-body clearfix">
-                            <a class="left" href=""><img src="{{ article.blog.user.avatar }}" alt=""></a>
+                            <a class="left" href=""><img src="{{ article.blog.user.avatar }}" alt="头像"></a>
                             {{ article.summary }}
                         </div>
                         <div class="art-footer">
@@ -70,7 +70,7 @@
                                 <span class="glyphicon glyphicon-user"></span>
                                 {{ article.blog.user.nickname }}
                             </a>
-                            <span>发布于{{ article.create_time }}</span>
+                            <span>发布于{{ article.create_time|date:"Y-m-d" }}</span>
                             <a href="">
                                 <span class="glyphicon glyphicon-comment" aria-hidden="true"></span>
                                 {{ article.comment_count }}

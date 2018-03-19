@@ -1,5 +1,5 @@
 from django.db import models
-
+import django.utils.timezone as timezone
 
 class UserInfo(models.Model):
     """
@@ -10,9 +10,9 @@ class UserInfo(models.Model):
     password = models.CharField(verbose_name='密码', max_length=64)
     nickname = models.CharField(verbose_name='昵称', max_length=32)
     email = models.EmailField(verbose_name='邮箱', unique=True)
-    avatar = models.ImageField(verbose_name='头像',upload_to="static/imgs/avatar")
+    avatar = models.ImageField(verbose_name='头像',upload_to="static/imgs/avatar",default="static/imgs/avatar/default.jpg")
 
-    create_time = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
+    create_time = models.DateTimeField(verbose_name='创建时间', default=timezone.now)
     fans = models.ManyToManyField(verbose_name='粉丝们',
                                   to='UserInfo',
                                   through='UserFans',
@@ -90,7 +90,7 @@ class Comment(models.Model):
     """
     nid = models.BigAutoField(primary_key=True)
     content = models.CharField(verbose_name='评论内容', max_length=255)
-    create_time = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
+    create_time = models.DateTimeField(verbose_name='创建时间', default=timezone.now)
 
     reply = models.ForeignKey(verbose_name='回复评论', to='self', related_name='back', null=True,on_delete=models.CASCADE)
     article = models.ForeignKey(verbose_name='评论文章', to='Article', to_field='nid',on_delete=models.CASCADE)
@@ -114,7 +114,7 @@ class Article(models.Model):
     comment_count = models.IntegerField(default=0)
     up_count = models.IntegerField(default=0)
     down_count = models.IntegerField(default=0)
-    create_time = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
+    create_time = models.DateTimeField(verbose_name='创建时间',default=timezone.now)
 
     blog = models.ForeignKey(verbose_name='所属博客', to='Blog', to_field='nid',on_delete=models.CASCADE)
     category = models.ForeignKey(verbose_name='文章类型', to='Category', to_field='nid', null=True,on_delete=models.CASCADE)
