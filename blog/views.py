@@ -1,9 +1,12 @@
+from django.conf import settings
+from django.db.models import Count, Min, Max, Sum
 from utils.pager import PageInfo
 from django.shortcuts import render,HttpResponse,redirect
 from django.views import View
 from blog import forms
 import time
 from blog import models
+
 
 # Create your views here.
 
@@ -99,10 +102,10 @@ class Index(View):
 
 
         # 分页
-        target_Article_objs = models.Article.objects.filter(**condition)
+        target_Article_objs = models.Article.objects.filter(**condition).order_by("-create_time")
         all_count = target_Article_objs.count()
         # all_count = models.Article.objects.filter(**condition).count()  # 查询符合条件的条目数量
-        page_info = PageInfo(request.GET.get("page"), all_count, 5, "", 11)
+        page_info = PageInfo(request.GET.get("page"), all_count, settings.ITEMS_PER_PAGE, "", )
         # article_list = models.Article.objects.filter(**condition)[page_info.start():page_info.end()]
         article_list = target_Article_objs[page_info.start():page_info.end()]
         # print(article_list[0].blog.user.avatar)
@@ -110,7 +113,6 @@ class Index(View):
         TOP10_amount = 10 if all_count>=10 else all_count
         most_up_count = target_Article_objs.order_by("-up_count")[:TOP10_amount]
         most_comment_count = target_Article_objs.order_by("-comment_count")[:TOP10_amount]
-        print(models.Article.objects.values())
         return render(
             request,
             "blog/index.html",
@@ -125,3 +127,86 @@ class Index(View):
         )
 
 
+def getlayout(blog):
+    fans_objs = models.UserFans.objects.filter(user=blog.user)
+    myfollow_objs = models.UserFans.objects.filter(follower=blog.user)
+    tag_list = models.Article.objects.filter(blog=blog).values("tags__title", "tags__nid").annotate(ct=Count("nid"))
+    category_list = models.Article.objects.filter(blog=blog).values("category__title", "category__nid").annotate(
+        ct=Count("nid"))
+    date_list = models.Article.objects.filter(blog=blog).extra(
+        select={"Year_month": 'strftime("%%Y-%%m",create_time)'}).values("Year_month").annotate(ct=Count("nid"))
+    pageinfo = {
+        "blog":blog,
+        "fans_objs": fans_objs,
+        "myfollow_objs": myfollow_objs,
+        "tag_list": tag_list,
+        "category_list": category_list,
+        "date_list": date_list,
+    }
+    return pageinfo
+
+
+class HomePage(View):
+    def get(self,request,**kwargs):
+        site = kwargs.get("site")
+        blog = models.Blog.objects.filter(site=site).first()
+        if blog:
+            sort = kwargs.get("sort")
+            sort_val = kwargs.get("sort_val")
+            if sort == "tag":  # 按标签
+                article_list = models.Article.objects.filter(blog=blog, tags__nid=sort_val)
+            elif sort == "category":  # 按分类
+                article_list = models.Article.objects.filter(blog=blog, category__nid=sort_val)
+            elif sort == "date":
+                article_list = models.Article.objects.filter(blog=blog).extra(
+                    select={"Year_month": 'strftime("%%Y-%%m",create_time)'}).extra(where=["Year_month=%s"],
+                                                                                    params=[sort_val])
+            else:  # 所有文章
+                article_list = models.Article.objects.filter(blog=blog)
+            """
+                缺 year_month
+            """
+
+            # fans_objs = models.UserFans.objects.filter(user=blog.user)
+            # myfollow_objs = models.UserFans.objects.filter(follower=blog.user)
+            # tag_list = models.Article.objects.filter(blog=blog).values("tags__title","tags__nid").annotate(ct=Count("nid"))
+            # category_list = models.Article.objects.filter(blog=blog).values("category__title","category__nid").annotate(ct=Count("nid"))
+            # date_list = models.Article.objects.filter(blog=blog).extra(select={"Year_month":'strftime("%%Y-%%m",create_time)'}).values("Year_month").annotate(ct=Count("nid"))
+            pageinfo = getlayout(blog)
+
+            page_info = PageInfo(request.GET.get("page"), len(article_list), settings.ITEMS_PER_PAGE, "", )
+            # pageinfo["article_list"] = article_list.order_by("-create_time")
+            pageinfo["article_list"] = article_list.order_by("-create_time")[page_info.start():page_info.end()]
+            pageinfo["page_info"] = page_info
+
+
+            # pageinfo = {
+            #     "blog": blog,
+            #     "article_list": article_list.order_by("-create_time"),
+            #     "fans_objs":fans_objs,
+            #     "myfollow_objs":myfollow_objs,
+            #     "tag_list":tag_list,
+            #     "category_list":category_list,
+            #     "date_list": date_list,
+            # }
+
+            return render(request, "blog/homepage.html", pageinfo)
+        else:
+            return redirect("/")
+
+
+class Article(View):
+    def get(self,request,**kwargs):
+        site = kwargs.get("site")
+        blog = models.Blog.objects.filter(site=site).first()
+        pageinfo = getlayout(blog)
+
+        article_id = kwargs.get("article_id")
+        this_article = models.Article.objects.filter(nid=article_id).first()
+
+        pageinfo["this_article"] = this_article
+        return render(request,"blog/article_detail.html",pageinfo)
+
+
+def updown(request):
+    pass

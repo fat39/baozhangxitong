@@ -26,4 +26,10 @@ urlpatterns = [
     re_path("^register.html$",views.Register.as_view()),
     re_path("^logout/$",views.logout),
     re_path(r'^uploadAvatar/$', views.upload_avatar),
+    re_path(r"^updown/$",views.updown),
+
+    # 个人博客
+    re_path(r'^(?P<site>\w+)/$', views.HomePage.as_view()),
+    re_path(r'^(?P<site>\w+)/(?P<sort>tag|category|date)+/(?P<sort_val>[^/]+)/*$', views.HomePage.as_view()),
+    re_path(r'^(?P<site>\w+)/(?P<article_id>\w+).html$', views.Article.as_view()),
 ]
