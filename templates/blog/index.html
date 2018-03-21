@@ -5,6 +5,11 @@
     <title>Title</title>
     <link rel="stylesheet" href="/static/plugins/bootstrap-3.3.7-dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/static/css/commons.css">
+    <style>
+        .updown:hover{
+            cursor:pointer;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-default no-radius">
@@ -46,7 +51,7 @@
                 {% else %}
                     <ul class="nav navbar-nav navbar-right">
                         <li><a>{{ request.session.userinfo.username }}</a></li>
-                        <li><a href="#">我的博客</a></li>
+                        <li><a href="/{{ request.session.userinfo.site }}/">我的博客</a></li>
                         <li><a href="#">管理</a></li>
                         <li><a href="/logout/">退出</a></li>
                     </ul>
@@ -59,7 +64,7 @@
             <div class="col-md-8">
                 <div class="article-list">
                     {% for article in article_list %}
-                        <div class="article-item">
+                        <div class="article-item" art_id={{ article.nid }}>
                             <h3 class="art-header"><a href="/{{ article.blog.site }}/{{ article.nid }}.html">{{ article.title }}</a></h3>
                             <div class="art-body clearfix">
                                 <a class="left" href=""><img src="{{ article.blog.user.avatar }}" alt="头像"></a>
@@ -71,13 +76,13 @@
                                     {{ article.blog.user.nickname }}
                                 </a>
                                 <span>发布于{{ article.create_time|date:"Y-m-d" }}</span>
-                                <a href="">
+                                <a class="comments" href="">
                                     <span class="glyphicon glyphicon-comment" aria-hidden="true"></span>
                                     {{ article.comment_count }}
                                 </a>
-                                <a class="updown" href="">
+                                <a class="updown">
                                     <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
-                                    {{ article.up_count }}
+                                    <span>{{ article.up_count }}</span>
                                 </a>
                             </div>
                         </div>
@@ -116,17 +121,26 @@
     </div>
 
     <script src="/static/jquery-3.3.1.js"></script>
-{#    <script>#}
-{#        $(function(){#}
-{#            $(".updown").click(function(){#}
-{#                $.ajax({#}
-{#                    url:"/updown/",#}
-{#                    type:"GET",#}
-{#                    data:#}
-{#                })#}
-{#            })#}
-{#        })#}
-{#    </script>#}
+    <script>
+        $(function(){
+            $(".updown").click(function(){
+                var art_id = $(this).parents(".article-item").attr("art_id")
+                $ths = $(this)
+                var val = $ths.text()
+                $.ajax({
+                    url:"/updown/",
+                    type:"POST",
+                    dataType:"JSON",
+                    data:{"art_id":art_id,"val":val,"csrfmiddlewaretoken":"{{ csrf_token }}"},
+                    success:function(arg){
+                        if (arg.status){
+                            $ths.children("span:last").text(arg.up_count)
+                        }
+                    }
+                })
+            })
+        })
+    </script>
 
 </body>
 </html>

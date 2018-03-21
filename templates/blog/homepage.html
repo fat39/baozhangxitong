@@ -5,13 +5,16 @@
         .art_bottom{
             margin: 10px 0 -10px 0;
         }
+        .updown:hover{
+            cursor:pointer;
+        }
     </style>
 {% endblock %}
 
 
 {% block mycontent %}
     {% for article in article_list %}
-        <div>
+        <div class="article-item" art_id={{ article.nid }}>
             <div><a href="/{{ blog.site }}/{{ article.nid }}.html"><h4>{{ article.title }}</h4></a></div>
             <div>{{ article.summary }}</div>
             <div class="art_bottom">
@@ -24,17 +27,45 @@
                     <span class="glyphicon glyphicon-comment" aria-hidden="true"></span>
                     {{ article.comment_count }}
                 </a>
-                <a href="">
+                <a class="updown">
                     <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
-                    {{ article.up_count }}
+                    <span>{{ article.up_count }}</span>
                 </a>
             </div>
         </div>
         <hr>
     {% endfor %}
-    <nav aria-label="Page navigation">
-      <ul class="pagination">
-        {{ page_info.pager|safe }}
-      </ul>
-    </nav>
+    {% if article_list %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {{ page_info.pager|safe }}
+            </ul>
+        </nav>
+    {% endif %}
+
+{% endblock %}
+
+{% block myscript %}
+    <script src="/static/jquery-3.3.1.js"></script>
+    <script>
+        $(function(){
+            $(".updown").click(function(){
+                var art_id = $(this).parents(".article-item").attr("art_id")
+                $ths = $(this)
+                var val = $ths.text()
+                $.ajax({
+                    url:"/updown/",
+                    type:"POST",
+                    dataType:"JSON",
+                    data:{"art_id":art_id,"val":val,"csrfmiddlewaretoken":"{{ csrf_token }}"},
+                    success:function(arg){
+                        if (arg.status){
+                            $ths.children("span:last").text(arg.up_count)
+                            console.log(arg.up_count)
+                        }
+                    }
+                })
+            })
+        })
+    </script>
 {% endblock %}

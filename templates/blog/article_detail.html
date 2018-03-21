@@ -7,12 +7,13 @@
             font-size: 28px;
             color:darkcyan;
         }
-        #dianzan,#rigou{
+        .updown,.rigou{
             display: inline-block;
-            border: 1px solid black;
+            {#border: 1px solid black;#}
             margin: 10px;
-            height:100px;
-            width: 100px;
+        }
+        .updown:hover,.rigou:hover{
+            cursor:pointer
         }
         #dianzan div{
             margin: 0 30px;
@@ -23,93 +24,55 @@
 
     </style>
 
-
 {% endblock %}
 
+
 {% block mycontent %}
-    <div id="article_title">{{ this_article.title }}</div>
-    <div>{{ this_article.articledetail.content }}</div>
-    <div>
-        <div id="dianzan">
-            <i class="fa fa-thumbs-o-up fa-2x" aria-hidden="true"></i>
-            <div>123</div>
-        </div>
-        <div id="rigou">
-            <i class="fa fa-thumbs-o-down fa-2x" aria-hidden="true"></i>
-            <div>123</div>
+    <div class="article-item" art_id={{ this_article.nid }}>
+        <div id="article_title">{{ this_article.title }}</div>
+        <div>{{ this_article.articledetail.content }}</div>
+        <div>
+            <div class="updown">
+                <i class="fa fa-thumbs-o-up fa-2x" aria-hidden="true"></i>
+                <span>{{ this_article.up_count }}</span>
+            </div>
+            <div class="rigou">
+                <i class="fa fa-thumbs-o-down fa-2x" aria-hidden="true"></i>
+                <span>123</span>
+            </div>
         </div>
     </div>
 
 {#    {{ comment_str|safe }}#}
-    <div id="commentArea"></div>
-
+{#    <div id="commentArea"></div>#}
+    <div class="jumbotron">
+        {% include "include/comment.html" %}
+    </div>
 
 {% endblock %}
 
 
 {% block myscript %}
-{#   <script>#}
-{#        function show_comments(){#}
-{#            var comments = JSON.stringify({{ comments_list }});#}
-{#            for (var i=0;i<comments.length;i++){#}
-{#                console.log(comments[i])#}
-{#            }#}
-{#        }#}
-{#        show_comments()#}
-{#    </script>#}
-
     <script src="/static/jquery-3.3.1.js"></script>
     <script>
-        /*
-        1.调用对象方法是，通过调用类的prototype中的方法，可以扩展
-        2.正则表达式 /\{\w+\}/g
-        3.字符串replace方法
-            str.replace('alex','sb')
-            str.replace(/\{\w+\}/g,function(k,kk){return 123})
-        */
-        String.prototype.Format = function(arg){
-            // this当前字符串
-            //arg,Format方法传入的参数
-            // return 格式化后获取的新内容
-            var tmp = this.replace(/\{(\w+)\}/g,function(k,kk){
-                return arg[kk]
-            })
-            return tmp
-        }
-
         $(function(){
-            // 发送ajax请求，获取所有评论信息
-            // 页面加载完
-            // js生成结构
-            $.ajax({
-                url:"/comments-{{ this_article.nid }}.html",
-                type:"GET",
-                dataType:"JSON",
-                success:function(arg){
-                    if(arg.status){
-                        var comment = commentTree(arg.data)
-                        $("#commentArea").append(comment)
-                    }else{
-                        alert(arg.msg)
+            $(".updown").click(function(){
+                var art_id = $(this).parents(".article-item").attr("art_id")
+                $ths = $(this)
+                var val = $ths.children("span:last").text()
+                $.ajax({
+                    url:"/updown/",
+                    type:"POST",
+                    dataType:"JSON",
+                    data:{"art_id":art_id,"val":val,"csrfmiddlewaretoken":"{{ csrf_token }}"},
+                    success:function(arg){
+                        if (arg.status){
+                            $ths.children("span:last").text(arg.up_count)
+                            console.log(arg.up_count)
+                        }
                     }
-                }
+                })
             })
         })
-
-        function commentTree(commentList){
-            var comment_str = "<div class=comment>";
-            $.each(commentList,function(k,row){
-                // var tmp = "<div class=content>"+row.content+"</div>"
-                var tmp = "<div class=content>{content}</div>".Format({content:row.content})
-                comment_str += tmp
-                if(row.child.length>0){
-                    comment_str += commentTree(row.child);
-                }
-            })
-            comment_str += "</div>"
-
-            return comment_str;
-        }
-
     </script>
 {% endblock %}

@@ -1,3 +1,5 @@
+import json
+from django.db.models import F
 from django.conf import settings
 from django.db.models import Count, Min, Max, Sum
 from utils.pager import PageInfo
@@ -44,11 +46,14 @@ class Login(View):
             # 验证码正确
             username = request.POST.get("username")
             password = request.POST.get("password")
-            user = models.UserInfo.objects.filter(username=username, password=password)
+            user = models.UserInfo.objects.filter(username=username, password=password).first()
+            site = user.blog.site
             if user:
                 # 用户名密码正确
                 request.session["userinfo"] = {
+                    "user_id":user.nid,
                     "username": username,
+                    "site":site,
                 }
                 return redirect("/")
             else:
@@ -208,5 +213,62 @@ class Article(View):
         return render(request,"blog/article_detail.html",pageinfo)
 
 
-def updown(request):
-    pass
+def comments(request,nid):
+    import json
+    response = {"status":True,"data":None,"msg":None}
+    try:
+        comments = models.Comment.objects.filter(article_id=nid).values(
+            "nid","content","create_time","reply_id","article_id","user__nickname","user__blog__site","user_id"
+        )
+        # comments = models.Comment.objects.filter(article_id=nid).values()
+        # for item in comments:
+        #     print(item)
+        comments_dict = {}
+        comments_list = []
+        for item in comments:
+            comments_dict[item["nid"]] = item
+            item.setdefault("child", [])
+            reply_id = item.get("reply_id")
+            if reply_id:
+                comments_dict[reply_id]["child"].append(item)
+            else:
+                comments_list.append(item)
+        response["data"] = comments_list
+    except Exception as e:
+        response["status"] = False
+        response["msg"] = str(e)
+
+    print(response)
+    return HttpResponse(json.dumps(response))
+
+
+def up(request):
+    userinfo = request.session.get("userinfo")
+    art_id = request.POST.get("art_id")
+    # val = int(request.POST.get("val"))
+    response = {"status":True,"msg":None}
+    if userinfo:
+        user_id = userinfo["user_id"]
+        up = models.UpDown.objects.filter(article_id=art_id,user_id=user_id)
+        if up:
+            # 已经赞过
+            response["status"] = False
+            pass
+        else:
+            from django.db import transaction
+            with transaction.atomic():  # 出错了会报异常，但不会提交
+                # up_count = models.Article.objects.filter(nid=art_id).first().up_count
+                models.UpDown.objects.create(article_id=art_id,user_id=user_id,up=True)
+                models.Article.objects.filter(nid=art_id).update(up_count=F("up_count")+1)
+                up_count = models.Article.objects.filter(nid=art_id).first().up_count
+                response["up_count"] = up_count
+    else:
+        response["status"] = False
+    return HttpResponse(json.dumps(response))
+
+
+class Backend(View):
+    def get(self,request,*args,**kwargs):
+        return render(request,"blog/backend.html")
+
+
