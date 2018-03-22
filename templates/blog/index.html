@@ -23,7 +23,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#">报障系统项目</a>
+                <a class="navbar-brand" href="#">灯湖博客</a>
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
@@ -52,7 +52,7 @@
                     <ul class="nav navbar-nav navbar-right">
                         <li><a>{{ request.session.userinfo.username }}</a></li>
                         <li><a href="/{{ request.session.userinfo.site }}/">我的博客</a></li>
-                        <li><a href="#">管理</a></li>
+                        <li><a href="/backend/">管理</a></li>
                         <li><a href="/logout/">退出</a></li>
                     </ul>
                 {% endif %}
@@ -102,7 +102,7 @@
                     <div class="panel-heading">点赞TOP10</div>
                     <div class="panel-body">
                         {% for article in most_up_count %}
-                            <p><a class="top10title" href="/{{ article.blog.site }}/{{ article.nid }}.html">{{ article.title }}</a>-点赞{{ article.up_count }}</p>
+                            <p><a href="/{{ article.blog.site }}/{{ article.nid }}.html">{{ article.title }}</a>-点赞{{ article.up_count }}</p>
                         {% endfor %}
                     </div>
                 </div>

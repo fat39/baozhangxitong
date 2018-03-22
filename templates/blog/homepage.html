@@ -8,6 +8,9 @@
         .updown:hover{
             cursor:pointer;
         }
+        .article_title{
+            display: inline-block;
+        }
     </style>
 {% endblock %}
 
@@ -15,7 +18,7 @@
 {% block mycontent %}
     {% for article in article_list %}
         <div class="article-item" art_id={{ article.nid }}>
-            <div><a href="/{{ blog.site }}/{{ article.nid }}.html"><h4>{{ article.title }}</h4></a></div>
+            <div class="article_title"><a href="/{{ blog.site }}/{{ article.nid }}.html"><h4>{{ article.title }}</h4></a></div>
             <div>{{ article.summary }}</div>
             <div class="art_bottom">
                 <a id="test" href="/{{ article.blog.site }}/">

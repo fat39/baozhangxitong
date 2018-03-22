@@ -1,0 +1,5 @@
+{% extends "layout/layout_backend.html" %}
+
+{% block mycontent %}
+    <h1>{{ request.session.userinfo.nickname }},您好！</h1>
+{% endblock %}

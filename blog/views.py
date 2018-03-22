@@ -53,6 +53,7 @@ class Login(View):
                 request.session["userinfo"] = {
                     "user_id":user.nid,
                     "username": username,
+                    "nickname":user.nickname,
                     "site":site,
                 }
                 return redirect("/")
@@ -110,7 +111,7 @@ class Index(View):
         target_Article_objs = models.Article.objects.filter(**condition).order_by("-create_time")
         all_count = target_Article_objs.count()
         # all_count = models.Article.objects.filter(**condition).count()  # 查询符合条件的条目数量
-        page_info = PageInfo(request.GET.get("page"), all_count, settings.ITEMS_PER_PAGE, "", )
+        page_info = PageInfo(request.GET.get("page"), all_count, settings.INDEX_ITEMS_PER_PAGE, "", )
         # article_list = models.Article.objects.filter(**condition)[page_info.start():page_info.end()]
         article_list = target_Article_objs[page_info.start():page_info.end()]
         # print(article_list[0].blog.user.avatar)
@@ -179,7 +180,7 @@ class HomePage(View):
             # date_list = models.Article.objects.filter(blog=blog).extra(select={"Year_month":'strftime("%%Y-%%m",create_time)'}).values("Year_month").annotate(ct=Count("nid"))
             pageinfo = getlayout(blog)
 
-            page_info = PageInfo(request.GET.get("page"), len(article_list), settings.ITEMS_PER_PAGE, "", )
+            page_info = PageInfo(request.GET.get("page"), len(article_list), settings.HOMEPAGE_ITEMS_PER_PAGE, "", )
             # pageinfo["article_list"] = article_list.order_by("-create_time")
             pageinfo["article_list"] = article_list.order_by("-create_time")[page_info.start():page_info.end()]
             pageinfo["page_info"] = page_info
@@ -269,6 +270,49 @@ def up(request):
 
 class Backend(View):
     def get(self,request,*args,**kwargs):
-        return render(request,"blog/backend.html")
+        return render(request,"blog/backend_index.html")
+
+class BackendArticle(View):
+    def get(self,request,*args,**kwargs):
+        userinfo = request.session.get("userinfo")
+        if not userinfo:
+            # 未登录
+            return redirect("/login.html")
+        else:
+            # site_url = kwargs.pop("site")
+            site_session = userinfo.get("site")
+            # if site_url != site_session:  # 不是自己的后台管理页面
+            #     return redirect("/")
+            # else:  # 是自己的后台管理页面
+            condition = {}
+            for k,v in kwargs.items():
+                if v and v != "0":
+                    condition[k]=v
+            user_id = userinfo["user_id"]
+            tag_objs = models.Tag.objects.filter(blog__user_id=user_id)
+            category_objs = models.Category.objects.filter(blog__user_id=user_id)
+            type_list = models.Article.type_choices
+
+            article_objs = models.Article.objects.filter(blog__user_id=user_id,**condition).order_by("-create_time")
+            page_info = PageInfo(request.GET.get("page"), article_objs.count(), settings.BACKEND_ITEMS_PER_PAGE, "", )
+            article_objs = article_objs[page_info.start():page_info.end()]
+            response = {
+                "tag_objs":tag_objs,
+                "category_objs":category_objs,
+                "type_list":type_list,
+                "article_objs":article_objs,
+                "myurl":kwargs,
+                "page_info":page_info,
+            }
+            return render(request, "blog/backend_article_manage.html",response)
+
+
+class BackendArticleCreate(View):
+    def get(self,request,*args,**kwargs):
+        # return render(request,"blog/article_edit.html")
+        return render(request,"blog/backend_article_create.html")
+
+
+
 
 

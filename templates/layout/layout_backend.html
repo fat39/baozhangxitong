@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/plugins/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .left{
+            float:left;
+        }
+        .right{
+            float:right
+        }
+        #pg_header{
+            height: 48px;
+            background-color: #2e6da4;
+            min-width: 1190px;
+        }
+        #leftbox{
+            position: absolute;
+            width: 200px;
+            top:48px;
+            bottom: 0;
+            left: 0;
+            background-color: #f7f7f7;
+        }
+        #contentbox{
+            position: absolute;
+            top:48px;
+            right: 0;
+            bottom: 0;
+            left:200px;
+            overflow: scroll;
+        }
+        #ind_page{
+            margin-left: 50px;
+            color:white;
+        }
+        #userinfo_bar a{
+            color:white;
+        }
+
+    </style>
+    {% block mycss %}{% endblock %}
+</head>
+<body>
+    <div id="pg_header">
+        <div >
+            <a id="ind_page" class="navbar-brand" href="/">灯湖博客</a>
+        </div>
+        <div id="userinfo_bar" class="right">
+            <a class="navbar-brand">{{ request.session.userinfo.nickname }}</a>
+            <a class="navbar-brand" href="/{{ request.session.userinfo.site }}/">我的主页</a>
+        </div>
+
+    </div>
+    <div id="pg_body">
+        <div id="leftbox">
+            <div>
+                <ul class="nav nav-pills nav-stacked">
+                    <li role="presentation"><a href="/backend/"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>后台首页</a></li>
+                    <li role="presentation"><a href="/backend/article.html"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>文章管理</a></li>
+                    <li role="presentation"><a href="/backend/article_create/"><span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>新建文章</a></li>
+                    <li role="presentation"><a>其他</a></li>
+                </ul>
+            </div>
+
+
+        </div>
+        <div id="contentbox">
+            {% block mycontent %}{% endblock %}
+
+        </div>
+    </div>
+
+    <script src="/static/plugins/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+{% block myscript %}{% endblock %}
+</body>
+</html>

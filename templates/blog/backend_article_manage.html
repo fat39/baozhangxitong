@@ -1,0 +1,82 @@
+{% extends "layout/layout_backend.html" %}
+{% block mycss %}
+    <style>
+        #search_area{
+            padding-left: 10px;
+        }
+        #search_area a{
+            padding:5px;
+        }
+    </style>
+{% endblock %}
+
+{% block mycontent %}
+
+    <div>
+        <div id="search_area">
+            <h3>筛选条件</h3>
+            <p>
+                {% if type_list %}
+                    <span>大类:</span>
+                    <a href="/backend/article-0-{{ myurl.category_id }}-{{ myurl.tags__nid }}.html">所有</a>
+                {% endif %}
+
+                {% for type in type_list %}
+                    <a href="/backend/article-{{ type.0 }}-{{ myurl.category_id }}-{{ myurl.tags__nid }}.html">{{ type.1 }}</a>
+                {% endfor %}
+            </p>
+            <p>
+                {% if category_objs %}
+                    <span>category:</span>
+                    <a href="/backend/article-{{ myurl.article_type_id }}-0-{{ myurl.tags__nid }}.html">所有</a>
+                {% endif %}
+
+                {% for category_obj in category_objs %}
+                    <a href="/backend/article-{{ myurl.article_type_id }}-{{ category_obj.nid }}-{{ myurl.tags__nid }}.html">{{ category_obj.title }}</a>
+                {% endfor %}
+            </p>
+            <p>
+                {% if tag_objs %}
+                    <span>tag:</span>
+                    <a href="/backend/article-{{ myurl.article_type_id }}-{{ myurl.category_id }}-0.html">所有</a>
+                {% endif %}
+
+                {% for tag_obj in tag_objs %}
+                    <a href="/backend/article-{{ myurl.article_type_id }}-{{ myurl.category_id }}-{{ tag_obj.nid }}.html">{{ tag_obj.title }}</a>
+                {% endfor %}
+            </p>
+
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th width="650px">标题</th>
+                    <th>评论数</th>
+                    <th>点赞数</th>
+                    <th>操作</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for article_obj in article_objs %}
+                    <tr>
+                        <td>
+                            <a href="/{{ request.session.userinfo.site }}/{{ article_obj.nid }}.html">{{ article_obj.title }}</a>
+                        </td>
+                        <td>{{ article_obj.comment_count }}</td>
+                        <td>{{ article_obj.up_count }}</td>
+                        <td><a href="">修改</a></td>
+                        <td>删除</td>
+                    </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+
+        <nav aria-label="Page navigation">
+          <ul class="pagination">
+            {{ page_info.pager|safe }}
+          </ul>
+        </nav>
+    </div>
+{% endblock %}

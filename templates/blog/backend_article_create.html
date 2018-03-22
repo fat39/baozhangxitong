@@ -1,0 +1,38 @@
+{% extends "layout/layout_backend.html" %}
+
+{% block mycss %}
+    <style>
+        #article_box{
+            margin:10px;
+        }
+    </style>
+{% endblock %}
+
+{% block mycontent %}
+    <form id="article_box" method="POST" action="/backend/article_create/">
+        {% csrf_token %}
+        <div>
+            <div>文章内容</div>
+            <div>
+                <textarea name="content" id="i1" cols="30" rows="10"></textarea>
+            </div>
+        </div>
+        <input type="submit">
+    </form>
+{% endblock %}
+
+
+{% block myscript %}
+    <script src="/static/plugins/kindeditor-4.1.10/kindeditor-all.js"></script>
+    <script>
+        KindEditor.create("#i1",{
+            width: "100%",
+            height:"450px",
+            resizeType:0,
+            uploadJson:"/upload_img.html",
+            extraFileUploadParams:{
+                "csrfmiddlewaretoken":"{{ csrf_token }}"
+            }
+        })
+    </script>
+{% endblock %}

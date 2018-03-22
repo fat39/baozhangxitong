@@ -26,6 +26,7 @@ urlpatterns = [
     re_path("^logout/$", views.logout),
 
     # 主页
+    # re_path("^$",views.test),
     re_path("^$",views.Index.as_view()),
     re_path(r'^all/(?P<type_id>\d+)/$',views.Index.as_view()),
     re_path("^codecheck/$",views.codecheck),
@@ -34,12 +35,16 @@ urlpatterns = [
     re_path(r'^uploadAvatar/$', views.upload_avatar),
     re_path(r"^updown/$",views.up),
 
+    # 后台
+    re_path(r"^backend/$", views.Backend.as_view()),
+    re_path(r"^backend/article.html$", views.BackendArticle.as_view()),
+    re_path(r"^backend/article-(?P<article_type_id>\d*)-(?P<category_id>\d*)-(?P<tags__nid>\d*).html$",views.BackendArticle.as_view()),
+    re_path(r"^backend/article_create/$",views.BackendArticleCreate.as_view()),
+
     # 个人博客
     re_path(r'^(?P<site>\w+)/$', views.HomePage.as_view()),
     re_path(r'^(?P<site>\w+)/(?P<sort>tag|category|date)+/(?P<sort_val>[^/]+)/*$', views.HomePage.as_view()),
     re_path(r'^(?P<site>\w+)/(?P<article_id>\d+).html$', views.Article.as_view()),
     re_path(r'^comments-(\d+).html$', views.comments),
 
-    # 后台
-    re_path(r"^(?P<site>\w+)/backend/$",views.Backend.as_view()),
 ]

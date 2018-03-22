@@ -23,6 +23,7 @@ class UserInfo(models.Model):
     def __str__(self):
         return self.username
 
+
 class Blog(models.Model):
     """
     博客信息
@@ -35,6 +36,7 @@ class Blog(models.Model):
 
     def __str__(self):
         return self.title
+
 
 class UserFans(models.Model):
     """
@@ -60,6 +62,7 @@ class Category(models.Model):
 
     def __str__(self):
         return "%s - %s" % (self.blog.title,self.title)
+
 
 class ArticleDetail(models.Model):
     """
@@ -135,6 +138,7 @@ class Article(models.Model):
     )
     def __str__(self):
         return "%s - %s" % (self.blog.title,self.title)
+
 
 class Article2Tag(models.Model):
     article = models.ForeignKey(verbose_name='文章', to="Article", to_field='nid',on_delete=models.CASCADE)
