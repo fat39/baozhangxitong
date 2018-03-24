@@ -30,7 +30,7 @@
 {% block mycontent %}
     <div class="article-item" art_id={{ this_article.nid }}>
         <div id="article_title">{{ this_article.title }}</div>
-        <div>{{ this_article.articledetail.content }}</div>
+        <div>{{ this_article.articledetail.content|safe }}</div>
         <div>
             <div class="updown">
                 <i class="fa fa-thumbs-o-up fa-2x" aria-hidden="true"></i>

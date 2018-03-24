@@ -131,6 +131,7 @@ class Article(models.Model):
 
     article_type_id = models.IntegerField(choices=type_choices, default=None)
 
+
     tags = models.ManyToManyField(
         to="Tag",
         through='Article2Tag',

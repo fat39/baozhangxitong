@@ -13,9 +13,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib import admin
 from django.urls import path,re_path
 from blog import views
+
 
 urlpatterns = [
 
@@ -37,9 +39,12 @@ urlpatterns = [
 
     # 后台
     re_path(r"^backend/$", views.Backend.as_view()),
-    re_path(r"^backend/article.html$", views.BackendArticle.as_view()),
-    re_path(r"^backend/article-(?P<article_type_id>\d*)-(?P<category_id>\d*)-(?P<tags__nid>\d*).html$",views.BackendArticle.as_view()),
-    re_path(r"^backend/article_create/$",views.BackendArticleCreate.as_view()),
+    # re_path(r"^backend/article.html$",csrf_exempt(views.BackendArticleManage.as_view())),
+    re_path(r"^backend/article.html$",views.BackendArticleManage.as_view()),
+    re_path(r"^backend/article-(?P<article_type_id>\d*)-(?P<category_id>\d*)-(?P<tags__nid>\d*).html$",views.BackendArticleManage.as_view()),
+    re_path(r"^backend/article_(create|modify)/$",views.BackendArticle.as_view()),
+    re_path(r"^backend/articeldel/$",views.BackendArticleDelete.as_view()),
+
 
     # 个人博客
     re_path(r'^(?P<site>\w+)/$', views.HomePage.as_view()),

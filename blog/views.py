@@ -8,7 +8,8 @@ from django.views import View
 from blog import forms
 import time
 from blog import models
-
+from utils import xss
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 
@@ -21,6 +22,7 @@ def codecheck(request):
     request.session["code"] = code  # 验证码存储在session中
     print(request.session.get("code"))
     return HttpResponse(stream.getvalue())
+
 
 def upload_avatar(request):
     if request.method == "POST":
@@ -35,6 +37,7 @@ def upload_avatar(request):
                 f.write(chunk)
         return HttpResponse(file_path)
 
+
 class Login(View):
     def get(self,request,*args,**kwargs):
         return render(request,"blog/login.html")
@@ -48,6 +51,7 @@ class Login(View):
             password = request.POST.get("password")
             user = models.UserInfo.objects.filter(username=username, password=password).first()
             site = user.blog.site
+            blog_id = user.blog.nid
             if user:
                 # 用户名密码正确
                 request.session["userinfo"] = {
@@ -55,6 +59,7 @@ class Login(View):
                     "username": username,
                     "nickname":user.nickname,
                     "site":site,
+                    "blog_id":blog_id,
                 }
                 return redirect("/")
             else:
@@ -63,6 +68,7 @@ class Login(View):
         else:
             # 验证码错误
             return render(request, "blog/login.html", {"err_code": "验证码错误"})
+
 
 def logout(request):
     del request.session["userinfo"]
@@ -91,6 +97,7 @@ class Register(View):
             return render(request,"blog/register.html",{"new_user":new_user})
             # obj.errors
             # clean方法出错了，err放在__all__
+
 
 class Index(View):
     def get(self, request, *args, **kwargs):
@@ -272,9 +279,11 @@ class Backend(View):
     def get(self,request,*args,**kwargs):
         return render(request,"blog/backend_index.html")
 
-class BackendArticle(View):
+
+class BackendArticleManage(View):
     def get(self,request,*args,**kwargs):
         userinfo = request.session.get("userinfo")
+
         if not userinfo:
             # 未登录
             return redirect("/login.html")
@@ -303,16 +312,105 @@ class BackendArticle(View):
                 "article_objs":article_objs,
                 "myurl":kwargs,
                 "page_info":page_info,
+                # "condition":condition,
             }
             return render(request, "blog/backend_article_manage.html",response)
 
+    def post(self,request,*args,**kwargs):
+        print(request.POST)
+        # print(request.body)
+        return HttpResponse("..")
 
-class BackendArticleCreate(View):
+    def delete(self,request,*args,**kwargs):
+        data = json.loads(request.body.decode("utf-8"))
+        print(data)
+        return HttpResponse(123)
+
+    def put(self,reqeust,*args,**kwargs):
+        pass
+
+    # @csrf_exempt
+    # def dispatch(self, *args, **kwargs):
+    #     return super(BackendArticleManage, self).dispatch(*args, **kwargs)
+
+class BackendArticleDelete(View):
+    def post(self,request,*args,**kwargs):
+        result = {"status":True,"msg":None}
+        art_id = request.POST.get("art_id")
+        try:
+            res = models.Article.objects.filter(nid=art_id).delete()
+            print(res)
+            pass
+        except Exception as e:
+            result["status"] = False
+            result["msg"] = str(e)
+        return HttpResponse(json.dumps(result), content_type="application/json")
+
+class BackendArticle(View):
     def get(self,request,*args,**kwargs):
         # return render(request,"blog/article_edit.html")
-        return render(request,"blog/backend_article_create.html")
+
+        web_info = {}
+        article_id = request.GET.get("article_id")
+        if article_id:
+            article_obj = models.Article.objects.filter(nid=article_id).first()
+            tag_objs = models.Tag.objects.filter(article2tag__article_id=article_id)
+            tag_str = ",".join([tag.title for tag in tag_objs])
+            web_info["article_obj"] = article_obj
+            web_info["tag_str"] = tag_str
+
+            # print(article_obj.articledetail.content)
+
+        userinfo = request.session.get("userinfo")
+        article_type = models.Article.type_choices
+        category_objs= models.Category.objects.filter(blog__user_id=userinfo["user_id"])
+
+        web_info["article_type"] = article_type
+        web_info["category_objs"] = category_objs
+
+        return render(request,"blog/backend_article.html",web_info)
+
+    def post(self,request,*args,**kwargs):
+        userinfo = request.session.get("userinfo")
+        blog_id = userinfo["blog_id"]
+        article_title = request.POST.get("article_title")
+        article_content = request.POST.get("article_content")
+        article_type_id = request.POST.get("article_type_id")
+        category_id = request.POST.get("category_id")
+        tags = request.POST.get("tags")
+
+        content_origin, content_text = xss.xss(article_content)
+
+        if article_title and article_content:  # 标题和内容必须存在
+            # 创建文章
+            art_obj = models.Article.objects.create(
+                title=article_title,
+                # summary=article_content[:70],
+                summary=content_text[:70],
+                blog_id=blog_id,
+                article_type_id=article_type_id,
+                category_id=category_id
+            )
+            # 创建文章详细内容
+            models.ArticleDetail.objects.create(content=content_origin,article=art_obj)
+
+            if tags:
+                tag_list = list(filter(lambda x:x,tags.split(",")))  # 去除空字符
+                tag_models_list = [item[0] for item in models.Tag.objects.filter(blog_id=blog_id).values_list("title")]
+                tag_create_set = set(tag_list).difference(tag_models_list)
+                tag_obj_list = []
+                for item in tag_create_set:
+                    tag_obj_list.append(models.Tag(title=item,blog_id=blog_id))
+                models.Tag.objects.bulk_create(tag_obj_list)
+
+                tag_objs = models.Tag.objects.filter(blog_id=blog_id,title__in=tag_list)
+                # print(tag_objs)
+                A2T_obj_list = []
+                for item in tag_objs:
+                    A2T_obj_list.append(models.Article2Tag(article=art_obj,tag=item))
+                x=models.Article2Tag.objects.bulk_create(A2T_obj_list)
+                # print(x)
 
 
-
-
+        return redirect("/backend/article_create/")
 

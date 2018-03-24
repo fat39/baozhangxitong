@@ -6,6 +6,7 @@ def xss(old):
         "p": ["class", "id"],
         "img": ["src"],
         "div": ["class"],
+        "span":["style"],
     }
     tags = soup.find_all()
     for tag in tags:
@@ -16,6 +17,6 @@ def xss(old):
             for k in list(tag.attrs.keys()):  # {"id":"i1","a"=123,"b"=999}
                 if k not in valid_tag[tag.name]:
                     del tag.attrs[k]  # 删除属性
-
-    content_str = soup.decode()
-    return content_str
+    content_origin = soup.decode()
+    content_text = soup.get_text()
+    return content_origin,content_text

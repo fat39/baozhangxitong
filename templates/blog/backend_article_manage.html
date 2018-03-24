@@ -1,4 +1,6 @@
 {% extends "layout/layout_backend.html" %}
+{% load searchbox %}
+
 {% block mycss %}
     <style>
         #search_area{
@@ -7,10 +9,19 @@
         #search_area a{
             padding:5px;
         }
+        .active{
+            background-color: red;
+            color:white;
+        }
     </style>
 {% endblock %}
 
 {% block mycontent %}
+
+{#    {% searchbox_html myurl.article_type_id kwargs.category_id kwargs.tags__nid type_list %}#}
+    {% searchbox_html myurl type_list 0 %}
+    {% searchbox_html myurl category_objs 1 %}
+    {% searchbox_html myurl tag_objs 2 %}
 
     <div>
         <div id="search_area">
@@ -18,17 +29,29 @@
             <p>
                 {% if type_list %}
                     <span>大类:</span>
-                    <a href="/backend/article-0-{{ myurl.category_id }}-{{ myurl.tags__nid }}.html">所有</a>
+                    {% if myurl.article_type_id == 0 %}
+                        <a class="active" href="/backend/article-0-{{ myurl.category_id }}-{{ myurl.tags__nid }}.html">所有</a>
+                    {% else %}
+                        <a href="/backend/article-0-{{ myurl.category_id }}-{{ myurl.tags__nid }}.html">所有</a>
+                    {% endif %}
                 {% endif %}
 
                 {% for type in type_list %}
-                    <a href="/backend/article-{{ type.0 }}-{{ myurl.category_id }}-{{ myurl.tags__nid }}.html">{{ type.1 }}</a>
+                    {% if type.0 == myurl.article_type_id %}
+                        <a class="active" href="/backend/article-{{ type.0 }}-{{ myurl.category_id }}-{{ myurl.tags__nid }}.html">{{ type.1 }}</a>
+                    {% else %}
+                        <a href="/backend/article-{{ type.0 }}-{{ myurl.category_id }}-{{ myurl.tags__nid }}.html">{{ type.1 }}</a>
+                    {% endif %}
                 {% endfor %}
             </p>
             <p>
                 {% if category_objs %}
                     <span>category:</span>
-                    <a href="/backend/article-{{ myurl.article_type_id }}-0-{{ myurl.tags__nid }}.html">所有</a>
+                    {% if not condition.category_id %}
+                        <a class="active" href="/backend/article-{{ myurl.article_type_id }}-0-{{ myurl.tags__nid }}.html">所有</a>
+                    {% else %}
+                        <a href="/backend/article-{{ myurl.article_type_id }}-0-{{ myurl.tags__nid }}.html">所有</a>
+                    {% endif %}
                 {% endif %}
 
                 {% for category_obj in category_objs %}
@@ -38,7 +61,11 @@
             <p>
                 {% if tag_objs %}
                     <span>tag:</span>
-                    <a href="/backend/article-{{ myurl.article_type_id }}-{{ myurl.category_id }}-0.html">所有</a>
+                    {% if not condition.tags__nid %}
+                        <a class="active" href="/backend/article-{{ myurl.article_type_id }}-{{ myurl.category_id }}-0.html">所有</a>
+                    {% else %}
+                        <a href="/backend/article-{{ myurl.article_type_id }}-{{ myurl.category_id }}-0.html">所有</a>
+                    {% endif %}
                 {% endif %}
 
                 {% for tag_obj in tag_objs %}
@@ -65,8 +92,8 @@
                         </td>
                         <td>{{ article_obj.comment_count }}</td>
                         <td>{{ article_obj.up_count }}</td>
-                        <td><a href="">修改</a></td>
-                        <td>删除</td>
+                        <td><a art_id="{{ article_obj.nid }}" href="/backend/article_modify/?article_id={{ article_obj.nid }}">修改</a></td>
+                        <td><a art_id="{{ article_obj.nid }}" class="_delete" href="">删除</a></td>
                     </tr>
                 {% endfor %}
 
@@ -79,4 +106,51 @@
           </ul>
         </nav>
     </div>
+{% endblock %}
+
+{% block myscript %}
+
+    <script>
+
+
+        $(function(){
+            $("._delete").click(ArticleDelete)
+        });
+
+        function ArticleDelete(){
+            var conf = confirm("请确认是否删除");
+            if (conf){
+                $ths = $(this)
+                var art_id = $ths.attr("art_id");
+                var formdata = new FormData();  //创建一个对象
+                formdata.append("art_id",art_id);
+                formdata.append("csrfmiddlewaretoken","{{ csrf_token }}");
+                $.ajax({
+                    {#url: "/backend/article.html",#}
+                    url: "/backend/articeldel/",
+                    type: "POST",
+                    data:formdata,
+                    {#dataType:"JSON",#}
+                    contentType:false,
+                    processData:false,  //这两个参数是formdata jquery不做数据的处理 ，以原生的formdata向后端传数据
+                    /*headers: {
+                        Accept: "application/json; charset=utf-8"
+                    },*/
+                    success:function (arg) {
+                        if(arg.status){
+                            {#window.location.reload()#}
+                            {#$ths.parent().parent("tr").remove()#}
+                        }
+                    }
+                })
+
+            }
+        }
+
+        $(function(){
+            {#var x = "{{ condition.article_type_id }}"#}
+            {#console.log(x)#}
+            {#$("#article_type a[art_id]")[1].classList.add("active")#}
+        })
+    </script>
 {% endblock %}

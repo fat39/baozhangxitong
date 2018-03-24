@@ -1,0 +1,97 @@
+{% extends "layout/layout_backend.html" %}
+
+{% block mycss %}
+    <style>
+        #article_box{
+            margin:10px;
+        }
+        #article_title{
+            width:100%;
+        }
+        #article_type input,#article_category input{
+            margin:5px 0 5px 15px;
+        }
+        #article_tag input{
+            width:50%;
+            margin-bottom: 15px;
+        }
+    </style>
+{% endblock %}
+
+{% block mycontent %}
+    <form id="article_box" method="POST" action="/backend/article_create/">
+        {% csrf_token %}
+
+        <h2>添加文章</h2>
+        <hr>
+        <h4>文章标题</h4>
+        <input name="article_title" id="article_title" type="text">
+        <h4>内容</h4>
+        <div>
+            <textarea name="article_content" id="article_content" cols="30" rows="10"></textarea>
+        </div>
+        <div>
+            <h4>常用选项</h4>
+            <div id="article_type">
+                <h5>网站分类</h5>
+                {% for foo in article_type %}
+                    {% if foo.0 == 1 %}
+                        <input type="radio" checked="checked" name="article_type_id" value="{{ foo.0 }}">{{ foo.1 }}
+                    {% else %}
+                        <input type="radio" name="article_type_id" value="{{ foo.0 }}">{{ foo.1 }}
+                    {% endif %}
+
+                {% endfor %}
+            </div>
+            <div id="article_category">
+                <h5>个人分类</h5>
+                {% for category in category_objs %}
+                    <input type="radio" name="category_id" value="{{ category.nid }}">{{ category.title }}
+                {% endfor %}
+
+            </div>
+            <div id="article_tag">
+                <h5>个人标签</h5>
+                <input type="text" name="tags"><span>多个关键字之间用“,”分隔</span>
+            </div>
+            
+        </div>
+
+{#        <input type="button" value="AJAX提交" onclick="artSubmit();">#}
+        <input type="submit">
+    </form>
+{% endblock %}
+
+
+{% block myscript %}
+{#    <script>#}
+{#        console.log($("#article_content").val("asdfsadf"))#}
+{#    </script>#}
+
+    <script src="/static/plugins/kindeditor-4.1.10/kindeditor-all.js"></script>
+    <script>
+        KindEditor.create("#article_content",{
+            width: "100%",
+            height:"450px",
+            resizeType:0,
+            uploadJson:"/upload_img.html",
+            extraFileUploadParams:{
+                "csrfmiddlewaretoken":"{{ csrf_token }}"
+            },
+            afterBlur:function(){this.sync();}
+
+        })
+    </script>
+    <script>
+        $(function() {
+            $("#article_title").val("{{ article_obj.title }}");
+            $("#article_type input[value='{{ article_obj.article_type_id }}']").prop("checked",true)
+            $("#article_category input[value='{{ article_obj.category_id }}']").prop("checked",true)
+            $("#article_tag input[name='tags']").val("{{ tag_str }}")
+            {#$("#article_content").html("{{ article_obj.articledetail.content }}")#}
+            {#var content = "{{ article_obj.articledetail.content }}"#}
+            {#$(document.getElementsByTagName("iframe")[0].contentWindow.document.body).html(content)#}
+        })
+    </script>
+
+{% endblock %}
