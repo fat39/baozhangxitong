@@ -95,7 +95,7 @@ class Comment(models.Model):
     content = models.CharField(verbose_name='评论内容', max_length=255)
     create_time = models.DateTimeField(verbose_name='创建时间', default=timezone.now)
 
-    reply = models.ForeignKey(verbose_name='回复评论', to='self', related_name='back', null=True,on_delete=models.CASCADE)
+    reply = models.ForeignKey(verbose_name='回复评论', to='self', related_name='back',blank=True, null=True,on_delete=models.CASCADE)
     article = models.ForeignKey(verbose_name='评论文章', to='Article', to_field='nid',on_delete=models.CASCADE)
     user = models.ForeignKey(verbose_name='评论者', to='UserInfo', to_field='nid',on_delete=models.CASCADE)
 

@@ -220,35 +220,59 @@ class Article(View):
         pageinfo["this_article"] = this_article
         return render(request,"blog/article_detail.html",pageinfo)
 
+    def post(self,request,*args,**kwargs):
+        pass
 
-def comments(request,nid):
-    import json
-    response = {"status":True,"data":None,"msg":None}
-    try:
-        comments = models.Comment.objects.filter(article_id=nid).values(
-            "nid","content","create_time","reply_id","article_id","user__nickname","user__blog__site","user_id"
+
+class Comments(View):
+    def get(self,request,*args,**kwargs):
+        nid = kwargs.get("article_id")
+        import json
+        response = {"status": True, "data": None, "msg": None}
+
+        comments = models.Comment.objects.filter(article_id=nid).extra(
+            select={'ctime': "strftime('%%Y-%%m',create_time)"}).values(
+            "nid", "content", "ctime","reply_id", "article_id","user_id","user__blog_nid"
         )
-        # comments = models.Comment.objects.filter(article_id=nid).values()
-        # for item in comments:
-        #     print(item)
-        comments_dict = {}
-        comments_list = []
-        for item in comments:
-            comments_dict[item["nid"]] = item
-            item.setdefault("child", [])
-            reply_id = item.get("reply_id")
-            if reply_id:
-                comments_dict[reply_id]["child"].append(item)
-            else:
-                comments_list.append(item)
-        response["data"] = comments_list
-    except Exception as e:
-        response["status"] = False
-        response["msg"] = str(e)
+        print(comments)
 
-    print(response)
-    return HttpResponse(json.dumps(response))
 
+
+        # try:
+        #     comments = models.Comment.objects.filter(article_id=nid).values(
+        #         "nid", "content", "create_time", "reply_id", "article_id", "user__nickname", "user__blog__site",
+        #         "user_id"
+        #     )
+        #
+        #     comments_dict = {}
+        #     comments_list = []
+        #     for item in comments:
+        #         comments_dict[item["nid"]] = item
+        #         item.setdefault("child", [])
+        #         reply_id = item.get("reply_id")
+        #         if reply_id:
+        #             comments_dict[reply_id]["child"].append(item)
+        #         else:
+        #             comments_list.append(item)
+        #     response["data"] = comments_list
+        # except Exception as e:
+        #     response["status"] = False
+        #     response["msg"] = str(e)
+        #
+        # print(response)
+        return HttpResponse(123)
+        return HttpResponse(json.dumps(response))
+    def post(self,request,*args,**kwargs):
+        userinfo = request.session.get("userinfo")
+        if userinfo:
+            article_id = kwargs.get("article_id")
+            comment = request.POST.get("comment")
+            user_id = userinfo["user_id"]
+            models.Comment.objects.create(content=comment,article_id=article_id,user_id=user_id)
+            print(comment)
+            return HttpResponse(comment)
+        else:
+            redirect("/login.html")
 
 def up(request):
     userinfo = request.session.get("userinfo")
@@ -333,6 +357,7 @@ class BackendArticleManage(View):
     # def dispatch(self, *args, **kwargs):
     #     return super(BackendArticleManage, self).dispatch(*args, **kwargs)
 
+
 class BackendArticleDelete(View):
     def post(self,request,*args,**kwargs):
         result = {"status":True,"msg":None}
@@ -345,6 +370,7 @@ class BackendArticleDelete(View):
             result["status"] = False
             result["msg"] = str(e)
         return HttpResponse(json.dumps(result), content_type="application/json")
+
 
 class BackendArticle(View):
     def get(self,request,*args,**kwargs):

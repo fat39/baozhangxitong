@@ -7,6 +7,7 @@ class PageInfo(object):
         except Exception as e:
             self.current_page = 1
         self.per_page = per_page
+        self.all_count = all_count
         a,b = divmod(all_count,per_page)
         if b:
             a += 1
@@ -57,10 +58,25 @@ class PageInfo(object):
                 tmp = '<li><a href="{}?page={}">{}</a></li>'.format(self.base_url,i,i)
             page_list.append(tmp)
 
+        # if self.current_page >= self.all_pager:
+        #     after = '<li><a href="#">下一页</a></li>'
+        # else:
+        #     after = '<li><a href="{}?page={}">下一页</a></li>'.format(self.base_url,self.current_page+1)
+        # page_list.append(after)
+
         if self.current_page >= self.all_pager:
-            after = '<li><a href="#">下一页</a></li>'
+            after = '<li><a href="#">下一页</a></li><span>（{start}-{end}/共{total}）</span>'.format(
+                start=self.start()+1 if self.start()<self.all_count else self.all_count,
+                end=self.end() if self.end()<self.all_count else self.all_count,
+                total=self.all_count)
         else:
-            after = '<li><a href="{}?page={}">下一页</a></li>'.format(self.base_url,self.current_page+1)
+            after = '<li><a href="{url}?page={next_page}">下一页</a></li><span>（{start}-{end}/共{total}）</span>'.format(
+                url=self.base_url,
+                next_page=self.current_page+1,
+                start=self.start()+1 if self.start()<self.all_count else self.all_count,
+                end=self.end() if self.end()<self.all_count else self.all_count,
+                total=self.all_count
+            )
         page_list.append(after)
 
 

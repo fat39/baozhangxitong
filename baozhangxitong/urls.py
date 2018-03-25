@@ -50,6 +50,6 @@ urlpatterns = [
     re_path(r'^(?P<site>\w+)/$', views.HomePage.as_view()),
     re_path(r'^(?P<site>\w+)/(?P<sort>tag|category|date)+/(?P<sort_val>[^/]+)/*$', views.HomePage.as_view()),
     re_path(r'^(?P<site>\w+)/(?P<article_id>\d+).html$', views.Article.as_view()),
-    re_path(r'^comments-(\d+).html$', views.comments),
+    re_path(r'^comments-(?P<article_id>\d+).html$', views.Comments.as_view()),
 
 ]

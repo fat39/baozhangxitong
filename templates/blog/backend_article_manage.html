@@ -18,61 +18,18 @@
 
 {% block mycontent %}
 
-{#    {% searchbox_html myurl.article_type_id kwargs.category_id kwargs.tags__nid type_list %}#}
-    {% searchbox_html myurl type_list 0 %}
-    {% searchbox_html myurl category_objs 1 %}
-    {% searchbox_html myurl tag_objs 2 %}
-
     <div>
         <div id="search_area">
             <h3>筛选条件</h3>
             <p>
-                {% if type_list %}
-                    <span>大类:</span>
-                    {% if myurl.article_type_id == 0 %}
-                        <a class="active" href="/backend/article-0-{{ myurl.category_id }}-{{ myurl.tags__nid }}.html">所有</a>
-                    {% else %}
-                        <a href="/backend/article-0-{{ myurl.category_id }}-{{ myurl.tags__nid }}.html">所有</a>
-                    {% endif %}
-                {% endif %}
-
-                {% for type in type_list %}
-                    {% if type.0 == myurl.article_type_id %}
-                        <a class="active" href="/backend/article-{{ type.0 }}-{{ myurl.category_id }}-{{ myurl.tags__nid }}.html">{{ type.1 }}</a>
-                    {% else %}
-                        <a href="/backend/article-{{ type.0 }}-{{ myurl.category_id }}-{{ myurl.tags__nid }}.html">{{ type.1 }}</a>
-                    {% endif %}
-                {% endfor %}
+                {% searchbox_html myurl type_list 0 %}
             </p>
             <p>
-                {% if category_objs %}
-                    <span>category:</span>
-                    {% if not condition.category_id %}
-                        <a class="active" href="/backend/article-{{ myurl.article_type_id }}-0-{{ myurl.tags__nid }}.html">所有</a>
-                    {% else %}
-                        <a href="/backend/article-{{ myurl.article_type_id }}-0-{{ myurl.tags__nid }}.html">所有</a>
-                    {% endif %}
-                {% endif %}
-
-                {% for category_obj in category_objs %}
-                    <a href="/backend/article-{{ myurl.article_type_id }}-{{ category_obj.nid }}-{{ myurl.tags__nid }}.html">{{ category_obj.title }}</a>
-                {% endfor %}
+                {% searchbox_html myurl category_objs 1 %}
             </p>
             <p>
-                {% if tag_objs %}
-                    <span>tag:</span>
-                    {% if not condition.tags__nid %}
-                        <a class="active" href="/backend/article-{{ myurl.article_type_id }}-{{ myurl.category_id }}-0.html">所有</a>
-                    {% else %}
-                        <a href="/backend/article-{{ myurl.article_type_id }}-{{ myurl.category_id }}-0.html">所有</a>
-                    {% endif %}
-                {% endif %}
-
-                {% for tag_obj in tag_objs %}
-                    <a href="/backend/article-{{ myurl.article_type_id }}-{{ myurl.category_id }}-{{ tag_obj.nid }}.html">{{ tag_obj.title }}</a>
-                {% endfor %}
+                {% searchbox_html myurl tag_objs 2 %}
             </p>
-
         </div>
         <table class="table table-striped">
             <thead>

@@ -49,6 +49,18 @@
         {% include "include/comment.html" %}
     </div>
 
+    <form id="comment_box" method="POST" action="/comment-{{ this_article.nid }}.html">
+        {% csrf_token %}
+        <div>
+            <div>评论内容：</div>
+            <div>
+                <textarea name="comment" id="comment" cols="30" rows="10"></textarea>
+            </div>
+        </div>
+        <input id="comment_commit" type="button" value="提交" onclick="CommentCommit();">
+    </form>
+
+
 {% endblock %}
 
 
@@ -74,5 +86,39 @@
                 })
             })
         })
+    </script>
+
+    <script src="/static/plugins/kindeditor-4.1.10/kindeditor-all.js"></script>
+    <script>
+        KindEditor.create("#comment",{
+            width: "50%",
+            height:"200px",
+            resizeType:0,
+            uploadJson:"/upload_img.html",
+            extraFileUploadParams:{
+                "csrfmiddlewaretoken":"{{ csrf_token }}"
+            },
+            afterBlur:function(){this.sync();},
+            items:['link', 'unlink', '|','indent','outdent','|','source','|','bold',]
+        })
+    </script>
+    <script>
+        function CommentCommit(){
+            var comm = $("#comment").val();
+            var formdata = new FormData();
+            formdata.append("comment",comm);
+            formdata.append("csrfmiddlewaretoken","{{ csrf_token }}");
+            $.ajax({
+                url:"/comments-{{ this_article.nid }}.html",
+                type:"POST",
+                data:formdata,
+                contentType:false,
+                processData:false,
+                success:function(arg){
+                    console.log(123)
+                    console.log(arg)
+                }
+            })
+        }
     </script>
 {% endblock %}
