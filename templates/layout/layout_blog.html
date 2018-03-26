@@ -60,7 +60,7 @@
         <div id="blogname"><a href="/{{ blog.site }}/"><h1 style="margin-top:0;">{{ blog.user.nickname }}</h1></a></div>
         <div id="menubar">
             <div id="rbar" class="right">
-                <span>{{ request.session.userinfo.site }}，您好！</span>
+                <span>{{ request.session.userinfo.nickname }}，您好！</span>
                 <a href="/">首页</a>
                 {% if request.session.userinfo %}
                     <a href="/{{ request.session.userinfo.site }}/">我的主页</a>

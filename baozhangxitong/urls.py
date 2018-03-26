@@ -44,6 +44,7 @@ urlpatterns = [
     re_path(r"^backend/article-(?P<article_type_id>\d*)-(?P<category_id>\d*)-(?P<tags__nid>\d*).html$",views.BackendArticleManage.as_view()),
     re_path(r"^backend/article_(create|modify)/$",views.BackendArticle.as_view()),
     re_path(r"^backend/articeldel/$",views.BackendArticleDelete.as_view()),
+    re_path(r"^upload_img/$",views.upload_img),
 
 
     # 个人博客

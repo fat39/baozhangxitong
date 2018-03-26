@@ -1,3 +1,4 @@
+import os
 import json
 from django.db.models import F
 from django.conf import settings
@@ -374,20 +375,46 @@ class BackendArticleDelete(View):
         return HttpResponse(json.dumps(result), content_type="application/json")
 
 
+def upload_img(request):
+    """
+    文件上传
+    :param request:
+    :return:
+    """
+
+    if request.method == "POST":
+        img_obj = request.FILES.get("imgFile")
+        img_path = "/static/media/imgs/{}".format(time.time())
+        local_img_path = os.path.join(settings.BASE_DIR,"static",'media',"imgs",str(time.time()))
+        print(img_path)
+        with open(local_img_path, "wb") as f:
+            for chunk in img_obj.chunks():
+                f.write(chunk)
+
+        dic = {
+            'error': 0,
+            'url': img_path,
+            # 'url': '/static/media/imgs/20130809170025.png',
+            'message': '错误了...'
+        }
+
+        return HttpResponse(json.dumps(dic))
+
 class BackendArticle(View):
     def get(self,request,*args,**kwargs):
-        # return render(request,"blog/article_edit.html")
+        userinfo = request.session.get("userinfo")
 
         web_info = {}
         article_id = request.GET.get("article_id")
         if article_id:
             article_obj = models.Article.objects.filter(nid=article_id).first()
-            tag_objs = models.Tag.objects.filter(article2tag__article_id=article_id)
-            tag_str = ",".join([tag.title for tag in tag_objs])
-            web_info["article_obj"] = article_obj
-            web_info["tag_str"] = tag_str
-            # web_info["article_content"] = [article_obj.articledetail.content]
-            # print([article_obj.articledetail.content])
+            if article_obj.blog.user_id != userinfo["user_id"]:
+                return redirect("/")
+            else:
+                tag_objs = models.Tag.objects.filter(article2tag__article_id=article_id)
+                tag_str = ",".join([tag.title for tag in tag_objs])
+                web_info["article_obj"] = article_obj
+                web_info["tag_str"] = tag_str
         userinfo = request.session.get("userinfo")
         article_type = models.Article.type_choices
         category_objs= models.Category.objects.filter(blog__user_id=userinfo["user_id"])

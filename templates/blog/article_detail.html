@@ -7,7 +7,7 @@
             font-size: 28px;
             color:darkcyan;
         }
-        .updown,.rigou{
+        .updown,.rigou,.art_edit{
             display: inline-block;
             {#border: 1px solid black;#}
             margin: 10px;
@@ -41,6 +41,10 @@
                 <i class="fa fa-thumbs-o-down fa-2x" aria-hidden="true"></i>
                 <span>123</span>
             </div>
+            {% if this_article.blog.user_id == request.session.userinfo.user_id %}
+                <div class="art_edit"><a href="/backend/article_modify/?article_id={{ this_article.nid }}">编辑</a></div>
+            {% endif %}
+
         </div>
     </div>
 

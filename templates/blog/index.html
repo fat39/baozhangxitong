@@ -76,7 +76,7 @@
                                     {{ article.blog.user.nickname }}
                                 </a>
                                 <span>发布于{{ article.create_time|date:"Y-m-d" }}</span>
-                                <a class="comments" href="">
+                                <a class="comments" href="/{{ article.blog.site }}/{{article.nid }}.html#comment_area">
                                     <span class="glyphicon glyphicon-comment" aria-hidden="true"></span>
                                     {{ article.comment_count }}
                                 </a>
