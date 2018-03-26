@@ -20,6 +20,7 @@
         }
         .comment{
             margin-left: 30px;
+
         }
 
     </style>
@@ -45,19 +46,20 @@
 
 {#    {{ comment_str|safe }}#}
 {#    <div id="commentArea"></div>#}
-    <div class="jumbotron">
+    <div id="comment_area" class="jumbotron">
         {% include "include/comment.html" %}
     </div>
 
     <form id="comment_box" method="POST" action="/comment-{{ this_article.nid }}.html">
         {% csrf_token %}
         <div>
-            <div>评论内容：</div>
+            <div>评论内容：<span id="com_to_who" style="color:red;"></span></div>
             <div>
-                <textarea name="comment" id="comment" cols="30" rows="10"></textarea>
+                <textarea name="mycomment" id="mycomment" cols="30" rows="10"></textarea>
             </div>
         </div>
         <input id="comment_commit" type="button" value="提交" onclick="CommentCommit();">
+{#        <input id="comment_commit" type="submit" value="提交">#}
     </form>
 
 
@@ -90,7 +92,7 @@
 
     <script src="/static/plugins/kindeditor-4.1.10/kindeditor-all.js"></script>
     <script>
-        KindEditor.create("#comment",{
+        KindEditor.create("#mycomment",{
             width: "50%",
             height:"200px",
             resizeType:0,
@@ -104,21 +106,43 @@
     </script>
     <script>
         function CommentCommit(){
-            var comm = $("#comment").val();
-            var formdata = new FormData();
-            formdata.append("comment",comm);
-            formdata.append("csrfmiddlewaretoken","{{ csrf_token }}");
-            $.ajax({
-                url:"/comments-{{ this_article.nid }}.html",
-                type:"POST",
-                data:formdata,
-                contentType:false,
-                processData:false,
-                success:function(arg){
-                    console.log(123)
-                    console.log(arg)
+            var comm = $("#mycomment").val();
+            var reply_comm = $("#mycomment").attr("com_id");
+            if(comm.replace(/&nbsp;/ig, "").trim().length>0){
+                var formdata = new FormData();
+                formdata.append("mycomment",comm);
+                formdata.append("csrfmiddlewaretoken","{{ csrf_token }}");
+                if (reply_comm){
+                    formdata.append("reply_comm",reply_comm)
                 }
-            })
+                $.ajax({
+                    url:"/comments-{{ this_article.nid }}.html",
+                    type:"POST",
+                    data:formdata,
+                    contentType:false,
+                    processData:false,
+                    success:function(arg){
+                        var res = JSON.parse(arg)
+                        if (res.status){
+                            window.location.reload()
+                        }else{
+                            if (res.msg=="not_login"){
+                                alert("用户出错，请重新登录")
+                            }
+                        }
+                    }
+                })
+            }
         }
+
+        $(function(){
+            $("#comment_area").on("click",".reply_to",function(){
+                var comment_id = $(this).attr("com_id")
+                var towho = $(this).attr("towho")
+                $("#com_to_who").text("@"+towho)
+                $("#mycomment").attr("com_id",comment_id)
+            })
+        })
+
     </script>
 {% endblock %}

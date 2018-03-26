@@ -26,6 +26,7 @@
         <hr>
         <h4>文章标题</h4>
         <input name="article_title" id="article_title" type="text">
+        <input type="text" name="article_nid" value="{{ article_obj.nid }}" style="display:none;">
         <h4>内容</h4>
         <div>
             <textarea name="article_content" id="article_content" cols="30" rows="10"></textarea>
@@ -79,15 +80,16 @@
                 "csrfmiddlewaretoken":"{{ csrf_token }}"
             },
             afterBlur:function(){this.sync();}
-
         })
     </script>
     <script>
         $(function() {
             $("#article_title").val("{{ article_obj.title }}");
-            $("#article_type input[value='{{ article_obj.article_type_id }}']").prop("checked",true)
-            $("#article_category input[value='{{ article_obj.category_id }}']").prop("checked",true)
-            $("#article_tag input[name='tags']").val("{{ tag_str }}")
+            $("#article_type input[value='{{ article_obj.article_type_id }}']").prop("checked",true);
+            $("#article_category input[value='{{ article_obj.category_id }}']").prop("checked",true);
+            $("#article_tag input[name='tags']").val({{ tag_str }});
+            KindEditor.html("#article_content","{{ article_obj.articledetail.content }}");
+            {#console.log("{{ article_obj.articledetail.content }}")#}
             {#$("#article_content").html("{{ article_obj.articledetail.content }}")#}
             {#var content = "{{ article_obj.articledetail.content }}"#}
             {#$(document.getElementsByTagName("iframe")[0].contentWindow.document.body).html(content)#}

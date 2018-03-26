@@ -230,49 +230,51 @@ class Comments(View):
         import json
         response = {"status": True, "data": None, "msg": None}
 
-        comments = models.Comment.objects.filter(article_id=nid).extra(
-            select={'ctime': "strftime('%%Y-%%m',create_time)"}).values(
-            "nid", "content", "ctime","reply_id", "article_id","user_id","user__blog_nid"
-        )
-        print(comments)
+        try:
+            comments = models.Comment.objects.filter(article_id=nid).values(
+                "nid", "content", "reply_id", "article_id", "user__nickname", "user__blog__site",
+                "user_id"
+            )
 
+            comments_dict = {}
+            comments_list = []
+            for item in comments:
+                comments_dict[item["nid"]] = item
+                item.setdefault("child", [])
+                reply_id = item.get("reply_id")
+                if reply_id:
+                    comments_dict[reply_id]["child"].append(item)
+                else:
+                    comments_list.append(item)
+            response["data"] = comments_list
+        except Exception as e:
+            response["status"] = False
+            response["msg"] = str(e)
 
-
-        # try:
-        #     comments = models.Comment.objects.filter(article_id=nid).values(
-        #         "nid", "content", "create_time", "reply_id", "article_id", "user__nickname", "user__blog__site",
-        #         "user_id"
-        #     )
-        #
-        #     comments_dict = {}
-        #     comments_list = []
-        #     for item in comments:
-        #         comments_dict[item["nid"]] = item
-        #         item.setdefault("child", [])
-        #         reply_id = item.get("reply_id")
-        #         if reply_id:
-        #             comments_dict[reply_id]["child"].append(item)
-        #         else:
-        #             comments_list.append(item)
-        #     response["data"] = comments_list
-        # except Exception as e:
-        #     response["status"] = False
-        #     response["msg"] = str(e)
-        #
-        # print(response)
-        return HttpResponse(123)
         return HttpResponse(json.dumps(response))
     def post(self,request,*args,**kwargs):
         userinfo = request.session.get("userinfo")
+        response = {"status": False, "msg": None}
         if userinfo:
-            article_id = kwargs.get("article_id")
-            comment = request.POST.get("comment")
-            user_id = userinfo["user_id"]
-            models.Comment.objects.create(content=comment,article_id=article_id,user_id=user_id)
-            print(comment)
-            return HttpResponse(comment)
+            try:
+                reply_com_id = request.POST.get("reply_comm")
+                comment_info = {
+                    "article_id":kwargs.get("article_id"),
+                    "content":request.POST.get("mycomment"),
+                    "user_id":userinfo["user_id"],
+                    "reply_id":reply_com_id,
+                }
+                models.Comment.objects.create(**comment_info)
+                # models.Comment.objects.create(content=mycomment,article_id=article_id,user_id=user_id)
+                response["status"] = True
+            except Exception as e:
+                response["msg"] = str(e)
+
         else:
-            redirect("/login.html")
+            response["msg"] = "not_login"
+
+        return HttpResponse(json.dumps(response))
+
 
 def up(request):
     userinfo = request.session.get("userinfo")
@@ -384,9 +386,8 @@ class BackendArticle(View):
             tag_str = ",".join([tag.title for tag in tag_objs])
             web_info["article_obj"] = article_obj
             web_info["tag_str"] = tag_str
-
-            # print(article_obj.articledetail.content)
-
+            # web_info["article_content"] = [article_obj.articledetail.content]
+            # print([article_obj.articledetail.content])
         userinfo = request.session.get("userinfo")
         article_type = models.Article.type_choices
         category_objs= models.Category.objects.filter(blog__user_id=userinfo["user_id"])
@@ -399,6 +400,7 @@ class BackendArticle(View):
     def post(self,request,*args,**kwargs):
         userinfo = request.session.get("userinfo")
         blog_id = userinfo["blog_id"]
+        article_nid = request.POST.get("article_nid")
         article_title = request.POST.get("article_title")
         article_content = request.POST.get("article_content")
         article_type_id = request.POST.get("article_type_id")
@@ -407,16 +409,21 @@ class BackendArticle(View):
 
         content_origin, content_text = xss.xss(article_content)
 
-        if article_title and article_content:  # 标题和内容必须存在
+        article_info = {
+            "title": article_title,
+            "summary": content_text[:70],
+            "blog_id": blog_id,
+            "article_type_id": article_type_id,
+            "category_id": category_id,
+        }
+
+        if article_nid:
+            models.Article.objects.filter(nid=article_nid).update(**article_info)
+            models.ArticleDetail.objects.filter(article_id=article_nid).update(content=content_origin)
+
+        if (not article_nid) and article_title and article_content:  # 标题和内容必须存在
             # 创建文章
-            art_obj = models.Article.objects.create(
-                title=article_title,
-                # summary=article_content[:70],
-                summary=content_text[:70],
-                blog_id=blog_id,
-                article_type_id=article_type_id,
-                category_id=category_id
-            )
+            art_obj = models.Article.objects.create(**article_info)
             # 创建文章详细内容
             models.ArticleDetail.objects.create(content=content_origin,article=art_obj)
 
@@ -438,5 +445,5 @@ class BackendArticle(View):
                 # print(x)
 
 
-        return redirect("/backend/article_create/")
+        return redirect("/backend/article.html")
 

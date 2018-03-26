@@ -47,7 +47,7 @@
             // var tmp = "<div class=content>"+row.content+"</div>"
             site = row.user__blog__site
             user_name = row.user__nickname
-            var tmp = "<div class=content><a href='/{site}/'>{user_nickname}</a> : {content}</div>".Format({content:row.content,user_nickname:row.user__nickname,site:row.user__blog__site})
+            var tmp = "<div class=content nid={comment_nid}><a href='/{site}/'>{user_nickname}</a> : {content}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class='reply_to' com_id='{comment_nid}' towho='{user_nickname}' style='cursor:pointer;font-size:10px;'><i>-回复</i></a></div>".Format({comment_nid:row.nid,content:row.content,user_nickname:row.user__nickname,site:row.user__blog__site})
             comment_str += tmp
             if(row.child.length>0){
                 comment_str += commentTree(row.child);
